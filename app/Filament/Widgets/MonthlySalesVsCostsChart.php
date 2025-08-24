@@ -8,7 +8,7 @@ class MonthlySalesVsCostsChart extends ChartWidget
 {
     protected static ?string $heading = 'Monthly Sales vs Costs';
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 4;
 
     protected function getType(): string
     {

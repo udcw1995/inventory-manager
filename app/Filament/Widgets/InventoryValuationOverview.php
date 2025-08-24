@@ -9,7 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class InventoryValuationOverview extends BaseWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 2;
 
     protected function getStats(): array
     {

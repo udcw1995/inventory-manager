@@ -5,6 +5,7 @@ namespace App\Filament\Resources\InvoiceResource\Pages;
 use App\Enums\BottleMovementType;
 use App\Enums\StockMovementSourceType;
 use App\Filament\Resources\InvoiceResource;
+use App\Models\Invoice;
 use App\Models\Product;
 use App\Services\BottleService;
 use App\Services\InventoryService;
@@ -56,7 +57,7 @@ class EditInvoice extends EditRecord
                 }),
             Actions\Action::make('print')
                 ->label('Print Invoice')
-                ->url(fn (Invoice $record) => route('print.invoice', $record))
+                // ->url(fn (Invoice $record) => route('print.invoice', $record))
                 ->openUrlInNewTab()
                 ->icon('heroicon-o-printer'),
         ];

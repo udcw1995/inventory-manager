@@ -32,61 +32,61 @@ class CreateInvoice extends CreateRecord
             $inventoryService = app(InventoryService::class);
             $bottleService = app(BottleService::class);
 
-            // Validate stock on hand
-            foreach ($data['items'] as $item) {
-                $product = Product::find($item['product_id']);
+            // First create invoice (without items)
+            $invoice = static::getModel()::create($data);
+
+            // Now validate stock on hand using already-saved items
+            foreach ($invoice->items as $item) {
+                $product = $item->product;
                 $currentStock = $inventoryService->stockOnHand($product);
-                if ($item['qty'] > $currentStock) {
-                    throw ValidationException::make(['items' => ['Product ' . $product->name . ' has insufficient stock. Available: ' . $currentStock]]);
+
+                if ($item->qty > $currentStock) {
+                    throw ValidationException::withMessages([
+                        'items' => ['Product ' . $product->name . ' has insufficient stock. Available: ' . $currentStock],
+                    ]);
                 }
             }
 
-            $invoice = static::getModel()::create($data);
+            // Post stock + bottle movements
+            foreach ($invoice->items as $item) {
+                $product = $item->product;
 
-            foreach ($data['items'] as $item) {
-                $invoice->items()->create($item);
-
-                $product = Product::find($item['product_id']);
-
-                // Inventory OUT movement for sold quantities
+                // OUT movement
                 $inventoryService->postOut(
                     product: $product,
-                    qty: $item['qty'],
-                    value: $item['unit_price'],
+                    qty: $item->qty,
+                    value: $item->unit_price,
                     sourceType: StockMovementSourceType::INVOICE,
                     sourceId: $invoice->id,
                     occurredAt: $invoice->issued_at,
-                    meta: ['invoice_item_id' => $invoice->id],
+                    meta: ['invoice_item_id' => $item->id], // ✅ use item id
                 );
 
-                // Bottle movements for refillable products
+                // Refillable bottle handling
                 if ($product->is_refillable) {
-                    // DELIVERED = sum of refillable qty
                     $bottleService->deliver(
                         shop: $invoice->shop,
                         product: $product,
-                        qty: $item['qty'],
+                        qty: $item->qty,
                         invoice: $invoice,
                         occurredAt: $invoice->issued_at,
                     );
 
-                    // RETURNED = sum of returned_empty
-                    if ($item['returned_empty'] > 0) {
+                    if ($item->returned_empty > 0) {
                         $bottleService->returned(
                             shop: $invoice->shop,
                             product: $product,
-                            qty: $item['returned_empty'],
+                            qty: $item->returned_empty,
                             invoice: $invoice,
                             occurredAt: $invoice->issued_at,
                         );
                     }
 
-                    // DAMAGED = sum of damaged_lost
-                    if ($item['damaged_lost'] > 0) {
+                    if ($item->damaged_lost > 0) {
                         $bottleService->damaged(
                             shop: $invoice->shop,
                             product: $product,
-                            qty: $item['damaged_lost'],
+                            qty: $item->damaged_lost,
                             invoice: $invoice,
                             occurredAt: $invoice->issued_at,
                         );
@@ -94,7 +94,7 @@ class CreateInvoice extends CreateRecord
                 }
             }
 
-            // Recalculate shops.refillable_balance
+            // Update shop refillable balance
             $bottleService->recalculateShopBalance($invoice->shop_id);
 
             return $invoice;

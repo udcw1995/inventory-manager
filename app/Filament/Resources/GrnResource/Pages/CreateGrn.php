@@ -30,17 +30,15 @@ class CreateGrn extends CreateRecord
 
             $inventoryService = app(InventoryService::class);
 
-            foreach ($data['items'] as $item) {
-                $grn->items()->create($item);
-
+            foreach ($grn->items as $item) {
                 $inventoryService->postIn(
-                    product: \App\Models\Product::find($item['product_id']),
-                    qty: $item['qty'],
-                    value: $item['unit_cost'],
+                    product: $item->product,
+                    qty: $item->qty,
+                    value: $item->unit_cost,
                     sourceType: StockMovementSourceType::GRN,
                     sourceId: $grn->id,
                     occurredAt: $grn->delivered_at,
-                    meta: ['grn_item_id' => $grn->id],
+                    meta: ['grn_item_id' => $item->id], // ⚡ fix here: should be item id not grn id
                 );
             }
 
