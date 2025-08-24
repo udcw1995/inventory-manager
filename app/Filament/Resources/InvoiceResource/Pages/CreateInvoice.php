@@ -4,7 +4,6 @@ namespace App\Filament\Resources\InvoiceResource\Pages;
 
 use App\Enums\StockMovementSourceType;
 use App\Filament\Resources\InvoiceResource;
-use App\Models\Product;
 use App\Services\BottleService;
 use App\Services\InventoryService;
 use App\Services\NumberGeneratorService;
