@@ -5,11 +5,11 @@ namespace App\Filament\Resources\GrnResource\Pages;
 use App\Filament\Resources\GrnResource;
 use Filament\Resources\Pages\Page;
 
-class EditGrn extends Page
+class ViewGrn extends Page
 {
     protected static string $resource = GrnResource::class;
 
-    protected static string $view = 'filament.resources.grn-resource.pages.edit-grn';
+    protected static string $view = 'filament.resources.grn-resource.pages.view-grn';
 
     public $record;
 

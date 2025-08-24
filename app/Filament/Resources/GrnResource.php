@@ -257,6 +257,7 @@ class GrnResource extends Resource
             'index' => Pages\ListGrns::route('/'),
             'create' => Pages\CreateGrn::route('/create'),
             'edit' => Pages\EditGrn::route('/{record}/edit'),
+            'view' => Pages\ViewGrn::route('/{record}'),
         ];
     }
 }
